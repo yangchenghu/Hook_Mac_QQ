@@ -19,6 +19,18 @@ static IMP sOriginalEmailImp = NULL;
 static IMP sOriginalQZoneImp = NULL;
 static IMP sOriginalWBlogImp = NULL;
 
+static IMP sOriginalShowDockCountImp  = NULL;
+
+/*
+ char -[UnreadMsgMgr isShowCountOnDock](void * self, void * _cmd) {
+ [self initPreference];
+ eax = sign_extend_32(*(int8_t *)(self + 0x10));
+ return eax;
+ }
+
+ */
+
+
 + (void)load
 {
     sOriginalEmailImp = [[self class] repleaseOldClass:@"MainWindowController"
@@ -35,6 +47,11 @@ static IMP sOriginalWBlogImp = NULL;
                                               newClass:NSStringFromClass([self class])
                                             oldMethods:@"setNewWBlogCount:"
                                             newMethods:@"ychsetNewWBlogCount:"];
+    
+    sOriginalShowDockCountImp = [[self class] repleaseOldClass:@"UnreadMsgMgr"
+                                              newClass:NSStringFromClass([self class])
+                                            oldMethods:@"isShowCountOnDock"
+                                            newMethods:@"ychisShowCountOnDock"];
     
     
 }
@@ -75,6 +92,19 @@ static IMP sOriginalWBlogImp = NULL;
     
     NSLog(@"get server email count is:%ld", arg1);
 }
+
+- (BOOL)ychisShowCountOnDock
+{
+    BOOL bResult = (BOOL)(IMP)sOriginalShowDockCountImp;
+    NSLog(@"ychisShowCountOnDock is :%@", (bResult ? @"YES" : @"NO"));
+    NSFileManager * filemanager = [NSFileManager defaultManager];
+    NSString * filepath = [[filemanager currentDirectoryPath] stringByAppendingPathComponent:@"qqshowread"];;
+    NSLog(@"show path :%@", filepath);
+    BOOL bReturn = [filemanager fileExistsAtPath:filepath];
+    NSLog(@"return is :%@", (bReturn ? @"YES" : @"NO"));
+    return bReturn;
+}
+
 
 
 
